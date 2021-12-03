@@ -72,4 +72,36 @@ gcode:
             sensor.humidity))}
 ```
 
+# temperature_fan.py [Klipper温度风扇的优化扩展，增加reverse配置项]
+
+Klipper标准的温度风扇temperature_fan默认逻辑是降温逻辑，设置了目标温度后，
+达到目标温度才会启动风扇降温，低于温度不会启动风扇，但是一些内循环风扇目的是增温，
+运行逻辑与降温风扇正好相反，所以我调整了代码，增加了原本温度风扇的reverse工作模式，
+打开reverse工作模式后，低于目标温度时风扇会工作，高于目标温度则会停止风扇
+
+## 安装方法
+
+复制插件`temperature_fan.py` 到 `klipper/klippy/extras` 覆盖原本的温度风扇扩展
+（由于是替换原Klipper扩展，所以升级有可能会覆盖，可能需要重新安装，不过我已经将扩展提交klipper官方PR，如果同意后会成为官方配置，就不需要重新安装）
+
+## 使用方法
+printer.cfg配置文件中增加传感器的配置段落
+```ini
+[temperature_fan enclosure_cyclic_fan]
+##	循环风扇
+pin: PD14
+sensor_type: HTU21D_HOST
+reverse: True # 主要是这个设置为True，温度风扇工作模式将反转，用于增温，其他配置沿用你自己的配置即可
+target_temp: 0.0
+min_temp: 0
+max_temp: 60.0
+max_speed: 0.6
+min_speed: 0
+# control: watermark
+control: pid
+pid_Kp: 40
+pid_Ki: 2
+pid_Kd: 1
+```
+
 
