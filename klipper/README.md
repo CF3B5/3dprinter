@@ -64,7 +64,7 @@ sensor_type: HTU21D_HOST
 #i2c_address: 64
 
 # 查询的温湿度的宏代码
-[gcode_macro QUERY_ENCLOSURE]
+[gcode_macro QUERY_HTU21D]
 gcode:
     {% set sensor = printer["htu21d_host enclosure"] %}
     {action_respond_info(
@@ -143,7 +143,7 @@ mac_address: A4:C1:38:10:73:D4 # 蓝牙的传感器mac地址，必须参数，�
 # report_time: 30 # 默认的30秒读取一次数据（蓝牙不要读取的太频密，最小10秒）非必需
 
 # 查询的温湿度的宏代码
-[gcode_macro QUERY_ENCLOSURE]
+[gcode_macro QUERY_XIAOMI]
 gcode:
     {% set sensor = printer["xiaomi_blue xiaomi"] %}
     {action_respond_info(
