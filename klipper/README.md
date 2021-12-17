@@ -1,3 +1,6 @@
+# 走过路过给我加点star，谢谢 :-)
+
+
 # shell_command.py [Klipper 支持系统命令的扩展]
 
 让Klipper的Gcode增加支持运行系统命令的功能
@@ -34,7 +37,6 @@ Klipper似乎对i2c总线的设备非常不稳定，一旦i2c总线的设备通�
 传感器也就只能接在树莓派的i2c接口上了（树莓派连接HTU21D的方法请自行搜索，网上很多）
 
 ## 安装方法
-
 复制 `htu21d_host.py` 到 `klipper/klippy/extras`
 
 修改`klipper/klippy/extras/temperature_sensors.cfg`文件，在其中增加一行
@@ -42,9 +44,9 @@ Klipper似乎对i2c总线的设备非常不稳定，一旦i2c总线的设备通�
 [htu21d_host]
 ```
 
-安装klipper环境的python的传感器支持库
+安装klipper环境的python的传感器支持库（国内安装建议使用国内镜像源）
 ```shell
-~/klippy-env/bin/pip install sensor smbus spidev
+~/klippy-env/bin/pip install sensor smbus spidev -i https://pypi.tuna.tsinghua.edu.cn/simple
 ```
 
 最后重启klipper服务
@@ -104,4 +106,49 @@ pid_Ki: 2
 pid_Kd: 1
 ```
 
+
+# xiaomi_blue.py [Klipper 增加小米蓝牙温湿度传感器的温湿度]
+
+小米这个传感器便宜大碗，所以很多人用这个传感器来进行打印机的仓温监控，而且这个传感器的协议坊间也公开的差不多了，
+所以就写了个模块用树莓派的蓝牙模块获取这个温度给klipper，不过因为是蓝牙，实效性不是太高就是了，不过用作仓温等应该问题不大
+
+## 安装方法
+复制 `xiaomi_blue.py` 到 `klipper/klippy/extras`
+
+修改`klipper/klippy/extras/temperature_sensors.cfg`文件，在其中增加一行
+```ini
+[xiaomi_blue]
+```
+
+安装klipper环境的python的蓝牙bluepy库以及系统支持
+```shell
+sudo apt install libglib2.0-dev
+
+~/klippy-env/bin/pip install bluepy -i https://pypi.tuna.tsinghua.edu.cn/simple
+```
+
+最后重启klipper服务
+```shell
+sudo service klipper restart
+```
+
+## 使用方法
+
+在klipper的printer.cfg配置文件中增加传感器的配置段落
+```ini
+# 传感器配置
+[temperature_sensor xiaomi]
+sensor_type: XIAOMI_BLUE # 传感器类型
+mac_address: A4:C1:38:10:73:D4 # 蓝牙的传感器mac地址，必须参数，具体可以通过米家连接蓝牙传感器后，通过传感器的关于设备菜单中获得
+# report_time: 30 # 默认的30秒读取一次数据（蓝牙不要读取的太频密，最小10秒）非必需
+
+# 查询的温湿度的宏代码
+[gcode_macro QUERY_ENCLOSURE]
+gcode:
+    {% set sensor = printer["xiaomi_blue xiaomi"] %}
+    {action_respond_info(
+        "Temperature: %.2f C\n"
+        "Humidity: %.2f%%" % (
+            sensor.temperature,
+            sensor.humidity))}
 
