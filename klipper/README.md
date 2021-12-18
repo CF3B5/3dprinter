@@ -39,11 +39,6 @@ Klipper似乎对i2c总线的设备非常不稳定，一旦i2c总线的设备通�
 ## 安装方法
 复制 `htu21d_host.py` 到 `klipper/klippy/extras`
 
-修改`klipper/klippy/extras/temperature_sensors.cfg`文件，在其中增加一行
-```ini
-[htu21d_host]
-```
-
 安装klipper环境的python的传感器支持库（国内安装建议使用国内镜像源）
 ```shell
 ~/klippy-env/bin/pip install sensor smbus spidev -i https://pypi.tuna.tsinghua.edu.cn/simple
@@ -58,6 +53,11 @@ sudo service klipper restart
 
 在klipper的printer.cfg配置文件中增加传感器的配置段落
 ```ini
+
+#加载模块
+[htu21d_host]
+
+
 # 传感器配置
 [temperature_sensor enclosure]
 sensor_type: HTU21D_HOST
@@ -131,10 +131,10 @@ sudo service klipper restart
 
 在klipper的printer.cfg配置文件中增加传感器的配置段落
 ```ini
+# 加载模块
+[xiaomi_blue]
+
 # 传感器配置
-
-[xiaomi_blue] # 加载模块
-
 [temperature_sensor xiaomi]
 sensor_type: XIAOMI_BLUE # 传感器类型
 mac_address: A4:C1:38:10:73:D4 # 蓝牙的传感器mac地址，必须参数，具体可以通过米家连接蓝牙传感器后，通过传感器的关于设备菜单中获得
