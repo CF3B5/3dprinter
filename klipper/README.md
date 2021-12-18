@@ -115,11 +115,6 @@ pid_Kd: 1
 ## 安装方法
 复制 `xiaomi_blue.py` 到 `klipper/klippy/extras`
 
-修改`klipper/klippy/extras/temperature_sensors.cfg`文件，在其中增加一行
-```ini
-[xiaomi_blue]
-```
-
 安装klipper环境的python的蓝牙bluepy库以及系统支持
 ```shell
 sudo apt install libglib2.0-dev
@@ -137,6 +132,9 @@ sudo service klipper restart
 在klipper的printer.cfg配置文件中增加传感器的配置段落
 ```ini
 # 传感器配置
+
+[xiaomi_blue] # 加载模块
+
 [temperature_sensor xiaomi]
 sensor_type: XIAOMI_BLUE # 传感器类型
 mac_address: A4:C1:38:10:73:D4 # 蓝牙的传感器mac地址，必须参数，具体可以通过米家连接蓝牙传感器后，通过传感器的关于设备菜单中获得
