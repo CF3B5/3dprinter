@@ -6,6 +6,7 @@
 import logging
 from bluepy import btle
 import struct
+from threading import Thread
 
 
 class XIAOMI_BLUE:
@@ -22,6 +23,7 @@ class XIAOMI_BLUE:
         self.printer.add_object("xiaomi_blue " + self.name, self)
         self.printer.register_event_handler("klippy:connect",
                                             self.handle_connect)
+        self.bt = None
 
     def connect(self):
         if self._blue_connect is None:
@@ -48,30 +50,28 @@ class XIAOMI_BLUE:
 
     def _sample_read(self, eventtime):
         try:
-            logging.info('read xiaomi blue')
-            p = self.connect()
-            p.writeCharacteristic(0x0038, b'\x01\x00', True)
-            p.writeCharacteristic(0x0046, b'\xf4\x01\x00', True)
-            measure = Measure(self)
-            p.withDelegate(measure)
-
-            if p.waitForNotifications(3000):
-                self.close()
-
+            self.bt = XiaoMiTempBt(self)
+            self.bt.start()
         except Exception:
-            logging.exception("xiaomi_blue: Error reading data")
-            # self.temp = self.humidity = .0
-            self.close()
-            # return self.reactor.NEVER
+            logging.exception('[xiaomi] error')
 
-        # if self.temp < self.min_temp or self.temp > self.max_temp:
-        #     self.printer.invoke_shutdown(
-        #         "HTU21D temperature %0.1f outside range of %0.1f:%.01f"
-        #         % (self.temp, self.min_temp, self.max_temp))
-
-        # measured_time = self.reactor.monotonic()
-        # print_time = self.i2c.get_mcu().estimated_print_time(measured_time)
-        # self._callback(print_time, self.temp)
+        # try:
+        #     logging.info('[xiaomi] read data')
+        #     p = self.connect()
+        #     p.writeCharacteristic(0x0038, b'\x01\x00', True)
+        #     p.writeCharacteristic(0x0046, b'\xf4\x01\x00', True)
+        #     measure = Measure(self)
+        #     p.withDelegate(measure)
+        #
+        #     # if p.waitForNotifications(3000):
+        #     #     logging.info('[xiaomi] read timeout!')
+        #     # self.close()
+        #
+        # except Exception:
+        #     logging.exception("[xiaomi] read data error")
+        #     # self.temp = self.humidity = .0
+        #     self.close()
+        #     # return self.reactor.NEVER
 
         mcu = self.printer.lookup_object('mcu')
         measured_time = self.reactor.monotonic()
@@ -86,6 +86,31 @@ class XIAOMI_BLUE:
             'temperature': round(self.temp, 2),
             'humidity': self.humidity
         }
+
+
+class XiaoMiTempBt(Thread):
+    def __init__(self, obj):
+        super(XiaoMiTempBt, self).__init__()
+        self.obj = obj
+
+    def run(self):
+        try:
+            logging.info('[xiaomi] read data')
+            p = self.obj.connect()
+            p.writeCharacteristic(0x0038, b'\x01\x00', True)
+            p.writeCharacteristic(0x0046, b'\xf4\x01\x00', True)
+            measure = Measure(self.obj)
+            p.withDelegate(measure)
+
+            if not p.waitForNotifications(300):
+                logging.info('[xiaomi] read timeout!')
+            # self.close()
+
+        except Exception:
+            logging.exception("[xiaomi] read data error")
+            # self.temp = self.humidity = .0
+            self.obj.close()
+            # return self.reactor.NEVER
 
 
 class Measure(btle.DefaultDelegate):
